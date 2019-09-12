@@ -20,4 +20,3 @@ cat src/main/java/io/committed/speedy/Example.java
 find .
 
 popd
-rm -rf $tmp_dir
