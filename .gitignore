@@ -1,0 +1,23 @@
+target/
+
+.project
+.settings/
+.classpath
+
+# Intellij stuff
+.idea
+**/*.iml
+
+# Visual studio code
+*.code-workspace
+
+# Spring stuff
+.factorypath
+
+# General
+*.log
+/tmp/
+
+# Deployment package
+deployment-package
+canary-deployment-*.zip
