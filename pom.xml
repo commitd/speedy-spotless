@@ -72,7 +72,16 @@
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.2</version>
+        <executions>
+          <execution>
+          <?m2e ignore?>
+            <id>install-formatter-hook</id>
+            <goals>
+              <goal>install-hooks</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <java>
             <googleJavaFormat>
