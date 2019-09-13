@@ -1,12 +1,15 @@
-# speedy-spotless
+# Speedy Spotless
 
 For easy formatting of staged changes. Inspired by [pretty-quick](https://github.com/azz/pretty-quick).
 
-It includes all goals from Spotless Maven Plugin but includes a new goal *apply-staged*.
+It includes `apply` and `check` goals from Spotless Maven Plugin but also includes the new goal `staged` to trigger the formatting of files staged in Git.
 
-`speedy-spotless:apply-staged` will only format staged files. Partially staged files will still be formatted but will trigger an error (cancelling say a Git commit).
 
-Speedy Spotless can easily be added as part of a pre-commit hook, e.g.:
+## Installation
+
+Speedy Spotless supports the exact same configuration options as Spotless Maven Plugin.
+
+Additionally the `install-hooks` goal may be used to install a pre-commit Git hook to format staged files when committing.
 
 ```xml
 
@@ -15,28 +18,35 @@ Speedy Spotless can easily be added as part of a pre-commit hook, e.g.:
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-      </plugin>
-      <plugin>
-        <groupId>io.github.phillipuniverse</groupId>
-        <artifactId>githook-maven-plugin</artifactId>
-        <version>1.0.4</version>
+        <version>0.0.2</version>
         <executions>
           <execution>
+            <id>install-formatter-hook</id>
             <goals>
-              <goal>install</goal>
+              <goal>install-hooks</goal>
             </goals>
-            <configuration>
-              <hooks>
-                <pre-commit>
-                  mvn speedy-spotless:apply-staged
-                </pre-commit>
-              </hooks>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <java>
+            <googleJavaFormat>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+            <removeUnusedImports />
+          </java>
+        </configuration>
       </plugin>
     </plugins>
 </build>
 
 ```
+
+Ensure the `install-hooks` goal is declared in your root POM.
+
+## Configuration
+
+See [Spotless Maven Plugin](https://github.com/diffplug/spotless/tree/master/plugin-maven#applying-to-java-source) for code formatting options.
+
+## Caveats
+
+- Currently only Java files are formatted. Spotless's `spotlessFiles` option is ignored.
