@@ -7,7 +7,24 @@
   <packaging>maven-plugin</packaging>
   <version>0.0.2-SNAPSHOT</version>
   <name>speedy-spotless-maven-plugin</name>
-  <url>http://maven.apache.org</url>
+  <description>For easy formatting of staged changes.</description>
+  <url>http://github.com/commitd/speedy-spotless</url>
+  <scm>
+    <url>http://github.com/commitd/speedy-spotless</url>
+  </scm>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Jonathan Elliot</name>
+      <organization>Committed</organization>
+    </developer>
+  </developers>
 
   <properties>
     <java.version>11</java.version>
