@@ -3,6 +3,9 @@ package io.committed.speedy.format;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+
+import com.diffplug.spotless.Formatter;
+import com.diffplug.spotless.maven.SpotlessApplyMojo;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,8 +21,6 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import com.diffplug.spotless.Formatter;
-import com.diffplug.spotless.maven.SpotlessApplyMojo;
 
 @Mojo(name = "staged", threadSafe = true)
 public class StagedMojo extends SpotlessApplyMojo {
@@ -37,6 +38,10 @@ public class StagedMojo extends SpotlessApplyMojo {
 
     try (Git git = new Git(repository)) {
       List<String> stagedChangedFiles = getChangedFiles(git, true, pathMatcher);
+      if (stagedChangedFiles.isEmpty()) {
+        getLog().info("No files were formatted");
+        return;
+      }
       List<String> unstagedChangedFiles = getChangedFiles(git, false, pathMatcher);
 
       Set<String> partiallyStagedFiles =
@@ -48,13 +53,10 @@ public class StagedMojo extends SpotlessApplyMojo {
               .filter(f -> !unstagedChangedFiles.contains(f))
               .collect(Collectors.toList());
 
-      List<File> stagedFiles = stagedChangedFiles.stream()
-          .map(filePath -> gitBaseDir().resolve(filePath).toFile())
-          .collect(toList());
-      if (stagedFiles.isEmpty()) {
-        getLog().info("No files were formatted");
-        return;
-      }
+      List<File> stagedFiles =
+          stagedChangedFiles.stream()
+              .map(filePath -> gitBaseDir().resolve(filePath).toFile())
+              .collect(toList());
       super.process(stagedFiles, formatter);
       getLog().info("Formatted " + stagedFiles.size() + " staged files");
 
