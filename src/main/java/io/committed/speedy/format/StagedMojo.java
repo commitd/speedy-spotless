@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -21,6 +20,8 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 @Mojo(name = "staged", threadSafe = true)
 public class StagedMojo extends SpotlessApplyMojo {
@@ -30,19 +31,28 @@ public class StagedMojo extends SpotlessApplyMojo {
 
   @Override
   protected void process(List<File> files, Formatter formatter) throws MojoExecutionException {
-    // TODO parameterise this (or filter against SpotlessApplyMojo.process(allFiles, ...)
-    Predicate<? super String> pathMatcher = path -> path.matches(".*\\.java");
+    if (files.isEmpty()) {
+      return;
+    }
     Repository repository = getRepo();
 
-    getLog().info("Formatting staged files");
+    Path workTreePath = repository.getWorkTree().toPath();
 
     try (Git git = new Git(repository)) {
-      List<String> stagedChangedFiles = getChangedFiles(git, true, pathMatcher);
+
+      TreeFilter treeFilter =
+          PathFilterGroup.createFromStrings(
+              files.stream()
+                  .map(f -> workTreePath.relativize(f.toPath()))
+                  .map(f -> f.toString().replace('\\', '/'))
+                  .collect(Collectors.toList()));
+
+      List<String> stagedChangedFiles = getChangedFiles(git, true, treeFilter);
       if (stagedChangedFiles.isEmpty()) {
-        getLog().info("No files were formatted");
+        getLog().debug("No files were formatted for this formatter");
         return;
       }
-      List<String> unstagedChangedFiles = getChangedFiles(git, false, pathMatcher);
+      List<String> unstagedChangedFiles = getChangedFiles(git, false, treeFilter);
 
       Set<String> partiallyStagedFiles =
           getPartiallyStagedFiles(stagedChangedFiles, unstagedChangedFiles);
@@ -93,14 +103,14 @@ public class StagedMojo extends SpotlessApplyMojo {
         .collect(Collectors.toSet());
   }
 
-  private List<String> getChangedFiles(Git git, boolean staged, Predicate<? super String> predicate)
+  private List<String> getChangedFiles(Git git, boolean staged, TreeFilter pathFilter)
       throws MojoExecutionException {
     try {
       // do we need to include untracked files also? e.g. ls-files --others --exclude-standard
-      return git.diff().setShowNameAndStatusOnly(true).setCached(staged).call().stream()
+      return git.diff().setPathFilter(pathFilter).setShowNameAndStatusOnly(true).setCached(staged)
+          .call().stream()
           .filter(e -> CHANGE_TYPES.contains(e.getChangeType()))
           .map(DiffEntry::getNewPath)
-          .filter(predicate)
           .collect(toList());
     } catch (GitAPIException e) {
       throw new MojoExecutionException("Failed to list changed files", e);
