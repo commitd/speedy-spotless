@@ -1,0 +1,39 @@
+---
+kind: pipeline
+type: docker
+name: speedy-spotless
+
+steps:
+
+  - name: build
+    image: committed/ci:1.2.0
+    commands:
+      - yarn install
+      - yarn clean
+      - yarn build
+
+  - name: slack
+    image: plugins/slack
+    settings:
+      channel: group-ci
+      webhook:
+        from_secret: slack_webhook
+      template:
+        from_secret: slack_template
+    when:
+      status:
+        - failure
+
+  - name: announce
+    image: plugins/slack
+    settings:
+      channel: group-dev
+      webhook:
+        from_secret: slack_webhook
+      template: >
+        :tada: New version ${DRONE_TAG} of `speedy-spotless` available
+    when:
+      ref:
+        - refs/tags/*
+      status:
+        - success
