@@ -8,9 +8,7 @@ steps:
   - name: build
     image: committed/ci:1.2.0
     commands:
-      - yarn install
-      - yarn clean
-      - yarn build
+      - mvn clean verify
 
   - name: slack
     image: plugins/slack
