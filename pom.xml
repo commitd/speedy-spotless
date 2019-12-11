@@ -98,7 +98,7 @@
     <dependency>
       <groupId>com.diffplug.spotless</groupId>
       <artifactId>spotless-maven-plugin</artifactId>
-      <version>1.24.1</version>
+      <version>1.26.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jgit</groupId>
