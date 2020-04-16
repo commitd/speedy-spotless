@@ -4,6 +4,7 @@ For easy formatting of staged changes. Inspired by [pretty-quick](https://github
 
 It includes `apply` and `check` goals from Spotless Maven Plugin but also includes the new goal `staged` to trigger the formatting of files staged in Git.
 
+Works with Java 8+.
 
 ## Installation
 
