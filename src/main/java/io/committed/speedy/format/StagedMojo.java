@@ -1,17 +1,7 @@
 package io.committed.speedy.format;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-
 import com.diffplug.spotless.Formatter;
 import com.diffplug.spotless.maven.SpotlessApplyMojo;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.eclipse.jgit.api.Git;
@@ -19,9 +9,19 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 @Mojo(name = "staged", threadSafe = true)
 public class StagedMojo extends SpotlessApplyMojo {
@@ -34,11 +34,11 @@ public class StagedMojo extends SpotlessApplyMojo {
     if (files.isEmpty()) {
       return;
     }
-    Repository repository = getRepo();
 
-    Path workTreePath = repository.getWorkTree().toPath();
+    try (Git git = Git.open(new File("."))) {
 
-    try (Git git = new Git(repository)) {
+      Repository repository = git.getRepository();
+      Path workTreePath = repository.getWorkTree().toPath();
 
       TreeFilter treeFilter =
           PathFilterGroup.createFromStrings(
@@ -65,7 +65,7 @@ public class StagedMojo extends SpotlessApplyMojo {
 
       List<File> stagedFiles =
           stagedChangedFiles.stream()
-              .map(filePath -> gitBaseDir().resolve(filePath).toFile())
+              .map(filePath -> repository.getDirectory().getParentFile().toPath().resolve(filePath).toFile())
               .collect(toList());
       super.process(stagedFiles, formatter);
       getLog().info("Formatted " + stagedFiles.size() + " staged files");
@@ -76,6 +76,8 @@ public class StagedMojo extends SpotlessApplyMojo {
       if (!partiallyStagedFiles.isEmpty()) {
         throwPartialUnstaged(partiallyStagedFiles);
       }
+    }catch (IOException e){
+      throw new MojoExecutionException("Could not open Git repository", e);
     }
   }
 
@@ -115,24 +117,5 @@ public class StagedMojo extends SpotlessApplyMojo {
     } catch (GitAPIException e) {
       throw new MojoExecutionException("Failed to list changed files", e);
     }
-  }
-
-  protected Repository getRepo() {
-    FileRepositoryBuilder builder = new FileRepositoryBuilder();
-    Repository repository;
-    try {
-      repository =
-          builder
-              .readEnvironment() // scan environment GIT_* variables
-              .findGitDir() // scan up the file system tree
-              .build();
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to find Git repository", e);
-    }
-    return repository;
-  }
-
-  protected final Path gitBaseDir() {
-    return getRepo().getDirectory().getParentFile().toPath();
   }
 }
