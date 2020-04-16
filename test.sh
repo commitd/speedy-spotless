@@ -32,7 +32,7 @@ echo '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.1</version>
         <configuration>
             <java>
               <googleJavaFormat>
@@ -53,7 +53,7 @@ git commit -m initial
 sed -i "" 's:\/\/ modline1:String s="";:g' "src/main/java/io/committed/speedy/Example.java"
 git add .
 
-mvn -X io.committed:speedy-spotless-maven-plugin:0.0.1-SNAPSHOT:staged
+mvn -X io.committed:speedy-spotless-maven-plugin:0.1.1:staged
 cat src/main/java/io/committed/speedy/Example.java
 cat pom.xml
 

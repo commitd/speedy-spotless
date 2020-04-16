@@ -18,7 +18,7 @@ Additionally the `install-hooks` goal may be used to install a pre-commit Git ho
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.0.2</version>
+        <version>0.1.1</version>
         <executions>
           <execution>
             <id>install-formatter-hook</id>
