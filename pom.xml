@@ -1,10 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.committed</groupId>
   <artifactId>speedy-spotless-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <name>speedy-spotless-maven-plugin</name>
   <description>For easy formatting of staged changes.</description>
   <url>http://github.com/commitd/speedy-spotless</url>
@@ -71,7 +71,7 @@
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.0.2</version>
+        <version>0.1.0</version>
         <executions>
           <execution>
             <?m2e ignore?>
@@ -97,12 +97,17 @@
     <dependency>
       <groupId>com.diffplug.spotless</groupId>
       <artifactId>spotless-maven-plugin</artifactId>
-      <version>1.26.1</version>
+      <version>1.30.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.diffplug.spotless</groupId>
+      <artifactId>spotless-lib</artifactId>
+      <version>1.28.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jgit</groupId>
       <artifactId>org.eclipse.jgit</artifactId>
-      <version>5.4.3.201909031940-r</version>
+      <version>5.7.0.202003110725-r</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
