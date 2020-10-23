@@ -1,6 +1,7 @@
 package io.committed.speedy.hook.executable;
 
 import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -22,7 +23,7 @@ import org.apache.maven.plugin.logging.Log;
  */
 class DefaultExecutable implements Executable {
 
-  private static final String SHIBANG = "#!/bin/bash";
+  private static final String SHEBANG = "#!/bin/bash";
 
   private final Supplier<Log> log;
   private final Path file;
@@ -60,7 +61,7 @@ class DefaultExecutable implements Executable {
   @Override
   public Executable truncate() throws IOException {
     log.get().debug("Truncating '" + file + "'");
-    Files.write(file, Collections.singleton(SHIBANG), StandardOpenOption.TRUNCATE_EXISTING);
+    Files.write(file, Collections.singleton(SHEBANG), StandardOpenOption.TRUNCATE_EXISTING);
     return this;
   }
 
