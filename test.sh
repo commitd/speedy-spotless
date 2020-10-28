@@ -57,10 +57,13 @@ FORMATTED_JAVA_FILE=$ROOT_DIR/partial/$JAVA_FILE
 BASE_JAVA_FILE=$BASE_DIR/$JAVA_FILE
 
 git init
+git config user.email "you@example.com"
+git config user.name "Your Name"
 git add .
 git commit -m initial
 # insert incorrect formatting
-sed -i "" 's/;/  ;/g' $FORMATTED_JAVA_FILE
+tmpfile=$(mktemp)
+sed 's/;/  ;/g' $FORMATTED_JAVA_FILE >"$tmpfile" && mv "$tmpfile" $FORMATTED_JAVA_FILE
 
 # ensure the formatting is now incorrect
 diff $FORMATTED_JAVA_FILE $BASE_JAVA_FILE
