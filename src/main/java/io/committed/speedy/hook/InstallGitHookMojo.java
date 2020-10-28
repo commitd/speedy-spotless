@@ -1,5 +1,8 @@
 package io.committed.speedy.hook;
 
+import io.committed.speedy.hook.executable.Executable;
+import io.committed.speedy.hook.executable.ExecutableManager;
+import io.committed.speedy.hook.util.MavenUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,9 +19,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import io.committed.speedy.hook.executable.Executable;
-import io.committed.speedy.hook.executable.ExecutableManager;
-import io.committed.speedy.hook.util.MavenUtils;
 
 @Mojo(name = "install-hooks", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
 public class InstallGitHookMojo extends AbstractMojo {
@@ -88,16 +88,16 @@ public class InstallGitHookMojo extends AbstractMojo {
     FileRepositoryBuilder builder = new FileRepositoryBuilder();
     Repository repository;
     try {
-      repository = builder
-          .readEnvironment() // scan environment GIT_* variables
-          .findGitDir() // scan up the file system tree
-          .build();
+      repository =
+          builder
+              .readEnvironment() // scan environment GIT_* variables
+              .findGitDir() // scan up the file system tree
+              .build();
     } catch (IOException e) {
       throw new RuntimeException("Failed to find Git repository", e);
     }
     return repository;
   }
-
 
   protected final Path gitBaseDir() {
     return getRepo().getDirectory().getParentFile().toPath();
@@ -130,8 +130,7 @@ public class InstallGitHookMojo extends AbstractMojo {
   private String mavenCliArguments() {
 
     return Optional.ofNullable(propertiesToPropagate).map(Arrays::asList)
-        .orElse(Collections.emptyList())
-        .stream()
+        .orElse(Collections.emptyList()).stream()
         .filter(prop -> System.getProperty(prop) != null)
         .map(prop -> "-D" + prop + "=" + System.getProperty(prop))
         .collect(Collectors.joining(" "));
@@ -170,6 +169,4 @@ public class InstallGitHookMojo extends AbstractMojo {
     }
     return hooksDirectory;
   }
-
-
 }
