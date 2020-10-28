@@ -1,9 +1,7 @@
 package io.committed.speedy.format;
 
-import org.apache.maven.plugins.annotations.Mojo;
 import com.diffplug.spotless.maven.SpotlessApplyMojo;
+import org.apache.maven.plugins.annotations.Mojo;
 
 @Mojo(name = "apply", threadSafe = true)
-public class SpeedyApplyMojo extends SpotlessApplyMojo {
-
-}
+public class SpeedyApplyMojo extends SpotlessApplyMojo {}

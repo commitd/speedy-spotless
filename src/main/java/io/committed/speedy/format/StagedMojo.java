@@ -1,7 +1,18 @@
 package io.committed.speedy.format;
 
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+
 import com.diffplug.spotless.Formatter;
 import com.diffplug.spotless.maven.SpotlessApplyMojo;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.eclipse.jgit.api.Git;
@@ -12,17 +23,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-
 @Mojo(name = "staged", threadSafe = true)
 public class StagedMojo extends SpotlessApplyMojo {
 
@@ -30,8 +30,8 @@ public class StagedMojo extends SpotlessApplyMojo {
       asList(ChangeType.ADD, ChangeType.COPY, ChangeType.MODIFY, ChangeType.RENAME);
 
   @Override
-  protected void process(List<File> files, Formatter formatter) throws MojoExecutionException {
-    if (files.isEmpty()) {
+  protected void process(Iterable<File> files, Formatter formatter) throws MojoExecutionException {
+    if (!files.iterator().hasNext()) {
       return;
     }
 
@@ -42,7 +42,7 @@ public class StagedMojo extends SpotlessApplyMojo {
 
       TreeFilter treeFilter =
           PathFilterGroup.createFromStrings(
-              files.stream()
+              StreamSupport.stream(files.spliterator(), false)
                   .map(f -> workTreePath.relativize(f.toPath()))
                   .map(f -> f.toString().replace('\\', '/'))
                   .collect(Collectors.toList()));
@@ -65,7 +65,9 @@ public class StagedMojo extends SpotlessApplyMojo {
 
       List<File> stagedFiles =
           stagedChangedFiles.stream()
-              .map(filePath -> repository.getDirectory().getParentFile().toPath().resolve(filePath).toFile())
+              .map(
+                  filePath ->
+                      repository.getDirectory().getParentFile().toPath().resolve(filePath).toFile())
               .collect(toList());
       super.process(stagedFiles, formatter);
       getLog().info("Formatted " + stagedFiles.size() + " staged files");
@@ -76,7 +78,7 @@ public class StagedMojo extends SpotlessApplyMojo {
       if (!partiallyStagedFiles.isEmpty()) {
         throwPartialUnstaged(partiallyStagedFiles);
       }
-    }catch (IOException e){
+    } catch (IOException e) {
       throw new MojoExecutionException("Could not open Git repository", e);
     }
   }
@@ -86,7 +88,7 @@ public class StagedMojo extends SpotlessApplyMojo {
     throw new MojoExecutionException(
         format(
             "Partially staged files were formatted but not re-staged:%n%s",
-            partiallyStagedFiles.stream().collect(Collectors.joining("\\n"))));
+            String.join("\\n", partiallyStagedFiles)));
   }
 
   private void stage(Git git, String f) throws MojoExecutionException {
