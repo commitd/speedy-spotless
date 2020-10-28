@@ -15,6 +15,7 @@ public interface Executable {
    * Erase the executable content
    *
    * @return The executable
+   * @throws IOException when the content could not be erased
    */
   Executable truncate() throws IOException;
 
@@ -23,7 +24,7 @@ public interface Executable {
    * @param sourceEncoding The source encoding
    * @param values The values to use for the template interpolations
    * @return The executable
-   * @throws IOException
+   * @throws IOException when the content could not be erased
    */
   Executable truncateWithTemplate(
       Supplier<InputStream> template, String sourceEncoding, Object... values) throws IOException;
@@ -33,7 +34,7 @@ public interface Executable {
    *
    * @param commandCall The command call to append to the executable
    * @return The executable
-   * @throws IOException
+   * @throws IOException when the call could not be appended
    */
   Executable appendCommandCall(String commandCall) throws IOException;
 }
