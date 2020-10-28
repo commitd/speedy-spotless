@@ -31,7 +31,7 @@ public class StagedMojo extends SpotlessApplyMojo {
 
   @Override
   protected void process(Iterable<File> files, Formatter formatter) throws MojoExecutionException {
-    if (files.iterator().hasNext()) {
+    if (!files.iterator().hasNext()) {
       return;
     }
 
