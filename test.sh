@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-mvn install -DskipTests
+mvn -B install -DskipTests
 
 BASE_DIR=$(pwd)
 ROOT_DIR=$(mktemp -d -t speedy-XXXXXXXXXX)
