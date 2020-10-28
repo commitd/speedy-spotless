@@ -25,6 +25,8 @@ public class ExecutableManager {
    * Get or creates a file then mark it as executable.
    *
    * @param file The file
+   * @return the script
+   * @throws IOException when the script file could not be accessed
    */
   public Executable getOrCreateExecutableScript(Path file) throws IOException {
     return new DefaultExecutable(log, file);
