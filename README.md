@@ -51,3 +51,25 @@ See [Spotless Maven Plugin](https://github.com/diffplug/spotless/tree/master/plu
 ## Caveats
 
 - Currently only Java files are formatted. Spotless's `spotlessFiles` option is ignored.
+
+## Building
+
+```
+# Building the maven plugin
+mvn clean package
+
+# Installing the maven plugin
+mvn clean install -DskipTests
+```
+
+## Deploying to Maven Central
+
+```
+# Required on macOS
+GPG_TTY=$(tty)
+export GPG_TTY
+
+# Setup GPG, maven settings.xml
+
+mvn clean deploy -P release
+```
