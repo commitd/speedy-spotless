@@ -55,7 +55,7 @@
       <plugin>
         <groupId>io.committed</groupId>
         <artifactId>speedy-spotless-maven-plugin</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.2</version>
         <executions>
           <execution>
             <?m2e ignore?>

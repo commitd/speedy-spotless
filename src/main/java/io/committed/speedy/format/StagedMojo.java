@@ -130,8 +130,13 @@ public class StagedMojo extends SpotlessApplyMojo {
       throws MojoExecutionException {
     try {
       // do we need to include untracked files also? e.g. ls-files --others --exclude-standard
-      return git.diff().setPathFilter(pathFilter).setShowNameAndStatusOnly(true).setCached(staged)
-          .call().stream()
+      return git
+          .diff()
+          .setPathFilter(pathFilter)
+          .setShowNameAndStatusOnly(true)
+          .setCached(staged)
+          .call()
+          .stream()
           .filter(e -> CHANGE_TYPES.contains(e.getChangeType()))
           .map(DiffEntry::getNewPath)
           .collect(toList());
