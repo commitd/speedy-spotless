@@ -129,8 +129,10 @@ public class InstallGitHookMojo extends AbstractMojo {
 
   private String mavenCliArguments() {
 
-    return Optional.ofNullable(propertiesToPropagate).map(Arrays::asList)
-        .orElse(Collections.emptyList()).stream()
+    return Optional.ofNullable(propertiesToPropagate)
+        .map(Arrays::asList)
+        .orElse(Collections.emptyList())
+        .stream()
         .filter(prop -> System.getProperty(prop) != null)
         .map(prop -> "-D" + prop + "=" + System.getProperty(prop))
         .collect(Collectors.joining(" "));

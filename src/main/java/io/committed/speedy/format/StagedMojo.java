@@ -9,6 +9,7 @@ import com.diffplug.spotless.maven.SpotlessApplyMojo;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
@@ -35,7 +37,7 @@ public class StagedMojo extends SpotlessApplyMojo {
       return;
     }
 
-    try (Git git = Git.open(new File("."))) {
+    try (Git git = openGitRepo()) {
 
       Repository repository = git.getRepository();
       Path workTreePath = repository.getWorkTree().toPath();
@@ -83,6 +85,23 @@ public class StagedMojo extends SpotlessApplyMojo {
     }
   }
 
+  private Git openGitRepo() throws IOException {
+    File cwd = Paths.get("").toFile().getAbsoluteFile();
+    try {
+      return Git.open(cwd);
+    } catch (IOException e) {
+      FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+      repositoryBuilder.findGitDir(cwd);
+      File gitDir = repositoryBuilder.getGitDir();
+      if (gitDir != null) {
+        return Git.open(gitDir);
+      } else {
+        throw new IOException(
+            "Could not find git directory scanning upwards from " + cwd.getPath());
+      }
+    }
+  }
+
   private void throwPartialUnstaged(Set<String> partiallyStagedFiles)
       throws MojoExecutionException {
     throw new MojoExecutionException(
@@ -111,8 +130,13 @@ public class StagedMojo extends SpotlessApplyMojo {
       throws MojoExecutionException {
     try {
       // do we need to include untracked files also? e.g. ls-files --others --exclude-standard
-      return git.diff().setPathFilter(pathFilter).setShowNameAndStatusOnly(true).setCached(staged)
-          .call().stream()
+      return git
+          .diff()
+          .setPathFilter(pathFilter)
+          .setShowNameAndStatusOnly(true)
+          .setCached(staged)
+          .call()
+          .stream()
           .filter(e -> CHANGE_TYPES.contains(e.getChangeType()))
           .map(DiffEntry::getNewPath)
           .collect(toList());
