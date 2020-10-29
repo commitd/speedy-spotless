@@ -5,13 +5,16 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import com.diffplug.spotless.Formatter;
+import com.diffplug.spotless.PaddedCell;
 import com.diffplug.spotless.maven.SpotlessApplyMojo;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -56,8 +59,8 @@ public class StagedMojo extends SpotlessApplyMojo {
       }
       List<String> unstagedChangedFiles = getChangedFiles(git, false, treeFilter);
 
-      Set<String> partiallyStagedFiles =
-          getPartiallyStagedFiles(stagedChangedFiles, unstagedChangedFiles);
+      Set<File> partiallyStagedFiles =
+          getPartiallyStagedFiles(stagedChangedFiles, unstagedChangedFiles, repository);
 
       List<String> fullyStagedFiles =
           stagedChangedFiles.stream()
@@ -67,9 +70,7 @@ public class StagedMojo extends SpotlessApplyMojo {
 
       List<File> stagedFiles =
           stagedChangedFiles.stream()
-              .map(
-                  filePath ->
-                      repository.getDirectory().getParentFile().toPath().resolve(filePath).toFile())
+              .map(filePath -> this.resolveGitPath(filePath, repository))
               .collect(toList());
       super.process(stagedFiles, formatter);
       getLog().info("Formatted " + stagedFiles.size() + " staged files");
@@ -78,11 +79,33 @@ public class StagedMojo extends SpotlessApplyMojo {
         stage(git, f);
       }
       if (!partiallyStagedFiles.isEmpty()) {
-        throwPartialUnstaged(partiallyStagedFiles);
+        Set<File> unformatted = findUnformatted(partiallyStagedFiles, formatter);
+        if (!unformatted.isEmpty()) {
+          throwPartialUnstaged(unformatted);
+        }
       }
     } catch (IOException e) {
       throw new MojoExecutionException("Could not open Git repository", e);
     }
+  }
+
+  private File resolveGitPath(String filePath, Repository repository) {
+    return repository.getDirectory().getParentFile().toPath().resolve(filePath).toFile();
+  }
+
+  private Set<File> findUnformatted(Set<File> files, Formatter formatter) {
+    List<File> problemFiles = new ArrayList<>();
+    for (File file : files) {
+      try {
+        PaddedCell.DirtyState dirtyState = PaddedCell.calculateDirtyState(formatter, file);
+        if (!dirtyState.isClean() && !dirtyState.didNotConverge()) {
+          problemFiles.add(file);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Unable to format file " + file, e);
+      }
+    }
+    return new TreeSet(problemFiles);
   }
 
   private Git openGitRepo() throws IOException {
@@ -102,12 +125,15 @@ public class StagedMojo extends SpotlessApplyMojo {
     }
   }
 
-  private void throwPartialUnstaged(Set<String> partiallyStagedFiles)
-      throws MojoExecutionException {
+  private void throwPartialUnstaged(Set<File> partiallyStagedFiles) throws MojoExecutionException {
     throw new MojoExecutionException(
         format(
-            "Partially staged files were formatted but not re-staged:%n%s",
-            String.join("\\n", partiallyStagedFiles)));
+            "There are partially staged :%n%s",
+            String.join(
+                "\\n",
+                partiallyStagedFiles.stream()
+                    .map(File::getAbsolutePath)
+                    .collect(Collectors.toList()))));
   }
 
   private void stage(Git git, String f) throws MojoExecutionException {
@@ -118,11 +144,12 @@ public class StagedMojo extends SpotlessApplyMojo {
     }
   }
 
-  private Set<String> getPartiallyStagedFiles(
-      List<String> stagedChangedFiles, List<String> unstagedChangedFiles) {
+  private Set<File> getPartiallyStagedFiles(
+      List<String> stagedChangedFiles, List<String> unstagedChangedFiles, Repository repository) {
     return stagedChangedFiles.stream()
         .distinct()
         .filter(unstagedChangedFiles::contains)
+        .map(filePath -> this.resolveGitPath(filePath, repository))
         .collect(Collectors.toSet());
   }
 
