@@ -1,5 +1,7 @@
 # Speedy Spotless
 
+**!!! This project is deprecated. See https://github.com/Cosium/git-code-format-maven-plugin for formatting Java code according to the Google Java Format.**
+
 For easy formatting of staged changes. Inspired by [pretty-quick](https://github.com/azz/pretty-quick).
 
 It includes `apply` and `check` goals from Spotless Maven Plugin but also includes the new goal `staged` to trigger the formatting of files staged in Git.
